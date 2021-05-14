@@ -39,37 +39,55 @@ class OrderControllerTest extends TestCase
         $response->assertSessionMissing('order');
     }
 
-    function test_it_show_error_when_missing_input_quantity()
+    private function inValidInputs($inputs)
     {
-        $url = action([OrderController::class, 'create']);
+        $validInputs = [
+            'quantity' => 1,
+            'voucher' => null,
+        ];
 
-        $response = $this->post($url);
-
-        $response->assertSessionHasErrors(['quantity']);
+        return array_filter(array_merge($validInputs, $inputs), function ($value) {
+            return $value !== null;
+        });
     }
 
     /**
      * @dataProvider provideWrongQuantity
+     * @dataProvider provideWrongVoucher
      */
-    function test_it_show_error_when_input_wrong_quantity($quantity)
+    function test_it_show_error_when_input_invalid($inputKey, $inputValue)
     {
         $url = action([OrderController::class, 'create']);
-
-        $response = $this->post($url, [
-            'quantity' => $quantity,
+        $inputs = $this->inValidInputs([
+            $inputKey => is_callable($inputValue) ? $inputValue() : $inputValue,
         ]);
 
-        $response->assertSessionHasErrors(['quantity']);
+        $response = $this->post($url, $inputs);
+
+        $response->assertSessionHasErrors([$inputKey]);
     }
 
     function provideWrongQuantity()
     {
         return [
-            [null],
-            [0],
-            [''],
-            ['   '],
-            ['not-a-number'],
+            'Quantity is required' => ['quantity', null],
+            'Quantity should be integer' => ['quantity', 1.1],
+            'Quantity should be greater than 1' => ['quantity', 0],
+        ];
+    }
+
+    function provideWrongVoucher()
+    {
+        return [
+            'Voucher must exist' => ['voucher', 'this-voucher-not-exist'],
+            'Voucher must be active' => [
+                'voucher',
+                function () {
+                    Voucher::factory()->inactive()->create(['code' => 'existed-voucher-but-inactive']);
+
+                    return 'existed-voucher-but-inactive';
+                },
+            ],
         ];
     }
 
@@ -79,6 +97,10 @@ class OrderControllerTest extends TestCase
     function test_it_should_not_error_when_input_empty_voucher($voucher)
     {
         $url = action([OrderController::class, 'create']);
+        $dummyPrice = new Price(100, 0, 0);
+        $this->priceServiceMock
+            ->shouldReceive('calculate')
+            ->andReturn($dummyPrice);
 
         $response = $this->post($url, [
             'quantity' => 1,
@@ -91,39 +113,10 @@ class OrderControllerTest extends TestCase
     function provideEmptyVoucher()
     {
         return [
-            [null],
-            [''],
-            ['   '],
+            'Voucher can be null' => [null],
+            'Voucher can be empty string' => [''],
+            'Voucher can be string with spaces only' => ['   '],
         ];
-    }
-
-    function test_it_show_error_when_input_non_existence_voucher_code()
-    {
-        Voucher::factory()->active()->create(['code' => 'existed-voucher']);
-
-        $url = action([OrderController::class, 'create']);
-
-        $response = $this->post($url, [
-            'quantity' => 1,
-            'voucher' => 'not-existed-voucher',
-        ]);
-
-        $response->assertSessionHasErrors(['voucher']);
-        $response->assertSessionDoesntHaveErrors(['quantity']);
-    }
-
-    function test_it_show_error_when_input_inactive_voucher_code()
-    {
-        Voucher::factory()->inactive()->create(['code' => 'existed-voucher']);
-
-        $url = action([OrderController::class, 'create']);
-
-        $response = $this->post($url, [
-            'quantity' => 1,
-            'voucher' => 'existed-voucher',
-        ]);
-
-        $response->assertSessionHasErrors(['voucher']);
     }
 
     function test_it_create_order_when_input_valid_quantity_and_voucher_code()
