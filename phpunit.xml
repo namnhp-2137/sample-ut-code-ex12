@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+>
+    <testsuites>
+        <testsuite name="All">
+            <directory suffix="Test.php">./tests/Unit</directory>
+            <directory suffix="Test.php">./tests/Feature</directory>
+            <directory suffix="Test.php">./Modules/**/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise01">
+            <directory suffix="Test.php">./Modules/Exercise01/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise02">
+            <directory suffix="Test.php">./Modules/Exercise02/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise03">
+            <directory suffix="Test.php">./Modules/Exercise03/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise04">
+            <directory suffix="Test.php">./Modules/Exercise04/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise05">
+            <directory suffix="Test.php">./Modules/Exercise05/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise06">
+            <directory suffix="Test.php">./Modules/Exercise06/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise07">
+            <directory suffix="Test.php">./Modules/Exercise07/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise08">
+            <directory suffix="Test.php">./Modules/Exercise08/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise09">
+            <directory suffix="Test.php">./Modules/Exercise09/Tests</directory>
+        </testsuite>
+        <testsuite name="Exercise10">
+            <directory suffix="Test.php">./Modules/Exercise10/Tests</directory>
+        </testsuite>
+    </testsuites>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./app</directory>
+            <directory suffix=".php">./Modules</directory>
+        </include>
+        <exclude>
+            <directory>./Modules/**/Config</directory>
+            <directory>./Modules/**/Database</directory>
+            <directory>./Modules/**/Resources</directory>
+            <directory>./Modules/**/Routes</directory>
+            <directory>./Modules/**/Tests</directory>
+            <directory>./Modules/**/Providers</directory>
+        </exclude>
+    </coverage>
+    <php>
+        <server name="APP_ENV" value="testing"/>
+        <!-- Disable debug to speed up test -->
+        <server name="APP_DEBUG" value="false" />
+        <server name="BCRYPT_ROUNDS" value="4"/>
+        <server name="CACHE_DRIVER" value="array"/>
+        <!-- <server name="DB_CONNECTION" value="sqlite"/> -->
+        <!-- <server name="DB_DATABASE" value=":memory:"/> -->
+        <server name="MAIL_MAILER" value="array"/>
+        <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <server name="TELESCOPE_ENABLED" value="false"/>
+    </php>
+</phpunit>
